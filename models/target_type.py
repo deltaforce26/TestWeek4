@@ -1,7 +1,7 @@
 from db import db
 
 class TargetType(db.Model):
-    __tablename__ = 'target_type'
+    __tablename__ = 'target_types'
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(100), nullable=True)
 
