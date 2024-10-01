@@ -1,0 +1,54 @@
+Query 1.
+
+The execution time for Query 1 improved  due to the creation of an index on the expression EXTRACT(YEAR FROM mission_date).
+Without the index, PostgreSQL had to perform a sequent scan and apply the year extraction function for each row, which was inefficient.
+With the index, PostgreSQL can quickly locate rows where the year is 1942, reducing the number of rows to process and improving performance.
+
+EXPLAIN ANALYZE SELECT DISTINCT ON (target_city) target_city, air_force, c
+FROM (
+    SELECT target_city, air_force, COUNT(air_force) AS c
+    FROM missions
+    WHERE EXTRACT(YEAR FROM mission_date) = 1942
+    GROUP BY target_city, air_force
+) AS subquery
+ORDER BY target_city, c DESC;
+
+query 1 before indexing:
+
+execution time: 244.666 ms
+
+creates index for query 1.
+CREATE INDEX index_mission_date ON mission (EXTRACT(YEAR FROM mission_date))
+
+query 1 after indexing:
+
+execution time: 6.731 ms
+
+
+Query 2.
+
+The execution time for Query 2 improved due to the creation of an index on the bomb_damage_assessment column.
+Without the index, PostgreSQL had to scan the entire table to filter rows based on the condition bomb_damage_assessment IS NOT NULL,
+and perform the grouping and ordering operations, which was time-consuming.
+With the index, PostgreSQL can quickly locate and filter rows where bomb_damage_assessment is not null, resulting in faster query execution.
+
+
+
+EXPLAIN ANALYZE SELECT bomb_damage_assessment, count(target_country)
+FROM mission
+WHERE bomb_damage_assessment IS NOT NULL
+AND airborne_aircraft > 5
+GROUP BY target_country, bomb_damage_assessment
+ORDER BY count(bomb_damage_assessment) DESC LIMIT 1;
+
+query 2 before indexing:
+
+execution time: 70.758 ms
+
+creates index for query 2.
+CREATE INDEX index_bomb_damage_assessment ON mission (bomb_damage_assessment)
+
+
+query 2 after indexing:
+
+execution time: 0.211 ms
